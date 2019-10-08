@@ -4,7 +4,7 @@
   "description": "CDR processor for CGRateS",
   "main": "index.js",
   "scripts": {
-    "test": "node src/app.js parse --serverType=SBC --cdrFile=data.cdrs"
+    "test": "node src/app.js parse --serverType=SBC --cdrFile=crds/sbc/cdrs-template"
   },
   "author": "",
   "license": "ISC",

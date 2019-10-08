@@ -21,7 +21,7 @@ yargs.command({
     }
   },
   handler(argv) {
-    cdr.parseCDRFile(argv.serverType, argv.cdrFile);
+    cdr.process(argv.serverType, argv.cdrFile);
   }
 });
 

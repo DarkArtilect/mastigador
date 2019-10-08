@@ -1,37 +1,39 @@
 const chalk = require("chalk");
 const fs = require("fs");
 const csvjson = require("csvjson");
-const ArrayList = require("arraylist");
 
-const parseCDRFile = (serverType, cdrFile) => {
+const process = (serverType, cdrFile) => {
   console.log("Reading " + cdrFile + " file from " + serverType + " server");
 
   loadCDRFile(cdrFile, cdrFileContent => {
     console.log(chalk.green.inverse("CDR file loaded"));
 
-    // convert cdrFileContent to a json object
-    const jsonObject = (convertToJSONObject = cdrFileContent => {});
-
-    var options = {
+    const convertToObjOptions = {
       delimiter: ",",
       quote: '"' // remove " caracter from original file field names (e.g. "SessionID")
     };
-    const jsonObj = csvjson.toObject(cdrFileContent, options);
+
+    const jsonObj = csvjson.toObject(cdrFileContent, convertToObjOptions);
 
     // create a list with all CDRs with only fields necessary to CGRateS
-    var cdrsArray = new ArrayList(); // List containing all CDRs parsed from parseJSONCDR function
+    const cdrsArray = []; // List containing all CDRs parsed from parseJSONCDR function
     jsonObj.forEach(element => {
-      parseJSONCDR(serverType, element, cdrData => {
-        cdrsArray.add(cdrData);
-      });
+      const cdrData = parseJSONCDR(serverType, element);
+      console.log(cdrData);
+
+      if (cdrData) {
+        cdrsArray.push(cdrData);
+      }
     });
 
     // set options for csvjson.toCSV
-    var options = {
+    const convertToCsvOptions = {
       delimiter: ",",
       wrap: false
     };
-    const cdrFinal = csvjson.toCSV(cdrsArray, options);
+
+    console.log(cdrsArray);
+    const cdrFinal = csvjson.toCSV(cdrsArray, convertToCsvOptions);
 
     console.log(cdrFinal);
     saveCDRtoFile(cdrFinal);
@@ -51,7 +53,7 @@ const loadCDRFile = (cdrFile, callback) => {
 };
 
 // this function receives the full CDR and gives back only the fields necessary to CGRateS
-const parseJSONCDR = (serverType, element, callback) => {
+const parseJSONCDR = (serverType, element) => {
   if (serverType === "SBC") {
     const cdrTemplate = {
       callID: element.SessionID,
@@ -63,8 +65,10 @@ const parseJSONCDR = (serverType, element, callback) => {
       sipCarrier: element.TermGW,
       callDirection: element.callType
     };
-    callback(cdrTemplate);
+    return cdrTemplate;
   }
+
+  return;
 };
 
 const saveCDRtoFile = cdrs => {
@@ -72,5 +76,5 @@ const saveCDRtoFile = cdrs => {
 };
 
 module.exports = {
-  parseCDRFile: parseCDRFile
+  process: process
 };
