@@ -2,6 +2,8 @@ const chalk = require("chalk");
 const fs = require("fs");
 const csvjson = require("csvjson");
 
+const database = require("./mongodb");
+
 const process = (serverType, cdrFile) => {
   console.log("Reading " + cdrFile + " file from " + serverType + " server");
 
@@ -19,7 +21,6 @@ const process = (serverType, cdrFile) => {
     const cdrsArray = []; // List containing all CDRs parsed from parseJSONCDR function
     jsonObj.forEach(element => {
       const cdrData = parseJSONCDR(serverType, element);
-      console.log(cdrData);
 
       if (cdrData) {
         cdrsArray.push(cdrData);
@@ -32,12 +33,15 @@ const process = (serverType, cdrFile) => {
       wrap: false
     };
 
-    console.log(cdrsArray);
-    const cdrFinal = csvjson.toCSV(cdrsArray, convertToCsvOptions);
+    // test
+    const collection = "SBC-test";
 
-    console.log(cdrFinal);
+    // insert parsed CDRs to MongoDB for future searches
+    database.saveCDRtoDatabase(collection, cdrsArray);
+
+    const cdrFinal = csvjson.toCSV(cdrsArray, convertToCsvOptions);
     saveCDRtoFile(cdrFinal);
-    console.log(chalk.green.inverse("Parsed CDR written to file"));
+    //console.log(chalk.green.inverse("Parsed CDR written to file"));
   });
 };
 
